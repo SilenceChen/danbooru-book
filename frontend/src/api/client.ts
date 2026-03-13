@@ -40,7 +40,7 @@ export interface CompositionTag {
   id: number
   name: string
   name_zh: string | null
-  weight: number
+  highWeight: boolean
 }
 
 export interface Composition {

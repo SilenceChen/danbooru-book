@@ -41,7 +41,7 @@ export default function TasksPage() {
   const translate = data?.translate
 
   return (
-    <div>
+    <div style={{ background: '#0f0f0f', minHeight: 'calc(100vh - 48px)', padding: 24 }}>
       <Title level={4}>任务管理</Title>
 
       <Row gutter={16}>

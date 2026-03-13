@@ -1,0 +1,10 @@
+/* Tailwind v4: 分开导入以跳过 preflight，避免与 AntD CSS reset 冲突 */
+@import "tailwindcss/theme.css";
+@import "tailwindcss/utilities.css";
+
+/* 声明 content 扫描路径 */
+@source "../src/**/*.{ts,tsx}";
+
+/* 消除浏览器默认边距 */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { margin: 0; padding: 0; height: 100%; }

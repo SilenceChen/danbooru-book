@@ -1,71 +1,84 @@
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
-import { Layout } from 'antd'
-import { SearchOutlined, EditOutlined, SettingOutlined } from '@ant-design/icons'
-import SearchPage from './pages/Search'
-import ComposePage from './pages/Compose'
+import { useState } from 'react'
+import { Button, Modal } from 'antd'
+import Workbench from './pages/Workbench'
 import TasksPage from './pages/Tasks'
+import { useComposeStore } from './store/composeStore'
 
-const { Content, Sider } = Layout
-
-const navItems = [
-  { key: '/', label: 'Tag 搜索', icon: <SearchOutlined /> },
-  { key: '/compose', label: '关键词组合', icon: <EditOutlined /> },
-  { key: '/tasks', label: '任务管理', icon: <SettingOutlined /> },
-]
+type Page = 'workbench' | 'tasks'
 
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Layout style={{ minHeight: '100vh' }}>
-        <Sider width={180} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
-          <div style={{ padding: '16px', fontWeight: 700, fontSize: 16, borderBottom: '1px solid #f0f0f0' }}>
-            Tag Book
-          </div>
-          <Routes>
-            <Route
-              path="*"
-              element={
-                <NavMenu />
-              }
-            />
-          </Routes>
-        </Sider>
-        <Layout>
-          <Content style={{ padding: 24, background: '#fff' }}>
-            <Routes>
-              <Route path="/" element={<SearchPage />} />
-              <Route path="/compose" element={<ComposePage />} />
-              <Route path="/tasks" element={<TasksPage />} />
-            </Routes>
-          </Content>
-        </Layout>
-      </Layout>
-    </BrowserRouter>
-  )
-}
+  const [page, setPage] = useState<Page>('workbench')
+  const [templateLibraryOpen, setTemplateLibraryOpen] = useState(false)
+  const [saveTemplateOpen, setSaveTemplateOpen] = useState(false)
+  const { clearAll } = useComposeStore()
 
-function NavMenu() {
+  const handleClear = () => {
+    Modal.confirm({
+      title: '确认清空',
+      content: '将清空正向和负向关键词，此操作不可撤销',
+      okText: '清空',
+      okButtonProps: { danger: true },
+      cancelText: '取消',
+      onOk: clearAll,
+    })
+  }
+
   return (
-    <nav style={{ padding: '8px 0' }}>
-      {navItems.map((item) => (
-        <NavLink
-          key={item.key}
-          to={item.key}
-          style={({ isActive }) => ({
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '10px 16px',
-            color: isActive ? '#1677ff' : '#333',
-            background: isActive ? '#e6f4ff' : 'transparent',
-            textDecoration: 'none',
-            fontWeight: isActive ? 600 : 400,
-          })}
-        >
-          {item.icon}
-          {item.label}
-        </NavLink>
-      ))}
-    </nav>
+    <div className="flex flex-col h-screen" style={{ background: '#0f0f0f' }}>
+      {/* 顶部导航栏 */}
+      <header
+        className="flex items-center px-4 shrink-0"
+        style={{ height: 48, background: '#111117', borderBottom: '1px solid #1c1c21' }}
+      >
+        <span className="text-sm font-semibold mr-6" style={{ color: '#a78bfa' }}>
+          Danbooru Book
+        </span>
+
+        <nav className="flex gap-1 flex-1">
+          {(['workbench', 'tasks'] as Page[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className="px-3 py-1 text-sm rounded-md transition-colors"
+              style={{
+                background: page === p ? '#18181b' : 'transparent',
+                color: page === p ? '#e4e4e7' : '#71717a',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {p === 'workbench' ? '工作台' : '任务管理'}
+            </button>
+          ))}
+        </nav>
+
+        {page === 'workbench' && (
+          <div className="flex items-center gap-2">
+            <Button size="small" danger type="text" onClick={handleClear}>
+              清空
+            </Button>
+            <Button size="small" type="default" onClick={() => setTemplateLibraryOpen(true)}>
+              模板库
+            </Button>
+            <Button size="small" type="primary" onClick={() => setSaveTemplateOpen(true)}>
+              保存模板
+            </Button>
+          </div>
+        )}
+      </header>
+
+      <main className="flex-1 overflow-hidden">
+        {page === 'workbench' ? (
+          <Workbench
+            templateLibraryOpen={templateLibraryOpen}
+            onTemplateLibraryClose={() => setTemplateLibraryOpen(false)}
+            saveTemplateOpen={saveTemplateOpen}
+            onSaveTemplateClose={() => setSaveTemplateOpen(false)}
+          />
+        ) : (
+          <TasksPage />
+        )}
+      </main>
+    </div>
   )
 }
